@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from ..models import get_db, Interaction, ActionLog, Customer
-from ..graph.workflow import app_graph
+from models import get_db, Interaction, ActionLog, Customer
+from graph.workflow import app_graph
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/ingestion", tags=["ingestion"])

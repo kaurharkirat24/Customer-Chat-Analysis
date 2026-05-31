@@ -1,5 +1,5 @@
 from .state import GraphState
-from ..services.llm_factory import get_llm
+from services.llm_factory import get_llm
 
 def llm_extraction_node(state: GraphState):
     llm = get_llm()
