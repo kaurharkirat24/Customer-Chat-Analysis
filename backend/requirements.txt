@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+sqlalchemy
+google-genai
+langchain
+langgraph
+langchain-google-genai
+pydantic[email]
+pyjwt
+passlib[bcrypt]
+python-dotenv
+httpx

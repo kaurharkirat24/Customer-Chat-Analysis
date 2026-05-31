@@ -1,9 +1,0 @@
-streamlit
-pandas
-matplotlib
-seaborn
-scikit-learn
-nltk
-spacy
-python-dotenv
-google-generativeai
