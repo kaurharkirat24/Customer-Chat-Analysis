@@ -21,11 +21,19 @@ class GeminiProvider(LLMProvider):
             raise ValueError("GEMINI_API_KEY not set")
         
         prompt = f"""
-        Analyze the following customer service interaction. 
-        Extract the sentiment (Positive, Neutral, Negative, Highly Frustrated) 
-        and the primary intent (Cancel, Escalation, Feedback, Billing, General Support).
-        Return EXACTLY a valid JSON string with keys 'sentiment' and 'intent'.
+        Analyze the following customer service interaction with an Enterprise-grade lens.
+        Extract the following data points into EXACTLY a valid JSON string:
         
+        1. 'intent': One of [Cancel, Downgrade, Refund, Escalation, Feedback, Billing, Security, Compliance, General Support]
+        2. 'sentiment': One of [Positive, Neutral, Negative, Highly Frustrated]
+        3. 'confidence': A float between 0.0 and 1.0 representing your confidence in the intent mapping.
+        4. 'priority': Map to one of [P0, P1, P2, P3]. 
+           - P0 = Security/Compliance/Data Breach
+           - P1 = Escalation/High Churn/Highly Frustrated
+           - P2 = Standard Billing/Refunds/Cancel
+           - P3 = Normal Support/Feedback
+        5. 'feature': A short 1-3 word tag describing the product feature mentioned (e.g., 'CSV Import', 'Login Flow'). If none, return null.
+
         Text: {text}
         """
         response = self.client.models.generate_content(

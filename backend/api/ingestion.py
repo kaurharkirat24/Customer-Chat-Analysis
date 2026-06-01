@@ -79,6 +79,10 @@ def get_recent_interactions(db: Session = Depends(get_db)):
             "intent": it.ai_intent or "Unknown",
             "sentiment": it.ai_sentiment or "Pending",
             "action": log.action_type if log else "Pending",
+            "priority": it.priority or "P3",
+            "confidence": it.confidence_score or 1.0,
+            "status": it.status or "Pending",
+            "feature": it.feature_tag,
             "time": "Just now" # Simplification for MVP
         })
     return results

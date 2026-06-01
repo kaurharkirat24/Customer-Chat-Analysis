@@ -81,6 +81,9 @@ async def gmail_polling_task():
                             
                             interaction.ai_intent = final_state.get("intent")
                             interaction.ai_sentiment = final_state.get("sentiment")
+                            interaction.confidence_score = final_state.get("confidence_score", 1.0)
+                            interaction.priority = final_state.get("priority", "P3")
+                            interaction.feature_tag = final_state.get("feature_tag")
                             interaction.status = final_state.get("status", "Processed")
                             db.commit()
                             

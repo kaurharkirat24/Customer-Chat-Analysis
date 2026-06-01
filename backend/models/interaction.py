@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Float
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
@@ -24,7 +24,10 @@ class Interaction(Base):
     ai_intent = Column(String)
     ai_sentiment = Column(String)
     ai_summary = Column(Text)
-    status = Column(String, default="Pending") # Pending, Resolved, Escalated
+    confidence_score = Column(Float, default=1.0)
+    priority = Column(String, default="P3") # P0, P1, P2, P3
+    feature_tag = Column(String, nullable=True) # Extracted feature for feedback
+    status = Column(String, default="Pending") # Pending, Resolved, Escalated, Draft_Pending_Approval
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     customer = relationship("Customer", back_populates="interactions")
