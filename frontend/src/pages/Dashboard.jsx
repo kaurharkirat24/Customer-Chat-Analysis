@@ -1,17 +1,21 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Activity, Users, AlertTriangle, LogOut, CheckCircle, MessageSquare } from 'lucide-react';
 
 const Dashboard = () => {
+  const [recentInteractions, setRecentInteractions] = useState([]);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     window.location.href = '/login';
   };
 
-  const recentInteractions = [
-    { id: 1, user: 'vip_client@acme.com', intent: 'Escalation', sentiment: 'Highly Frustrated', action: 'VIP_Escalated', time: '2m ago' },
-    { id: 2, user: 'jane@startup.io', intent: 'Cancel', sentiment: 'Negative', action: 'Rescue_Apology', time: '15m ago' },
-    { id: 3, user: 'dev@tech.net', intent: 'Feedback', sentiment: 'Positive', action: 'Product_Logged', time: '1h ago' },
-  ];
+  useEffect(() => {
+    // Fetch live data from our backend
+    fetch('http://localhost:8000/ingestion/interactions')
+      .then(res => res.json())
+      .then(data => setRecentInteractions(data))
+      .catch(err => console.error("Error fetching interactions:", err));
+  }, []);
 
   return (
     <div style={{ padding: '30px', maxWidth: '1200px', margin: '0 auto' }}>

@@ -24,3 +24,13 @@ build/
 # OS
 .DS_Store
 Thumbs.db
+
+# Credentials & Secrets
+token.json
+credentials.json
+
+# Documentations
+cx_documentation.md
+cx_implementation_plan.md
+cx_prd.md
+cx_task.md

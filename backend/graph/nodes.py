@@ -1,5 +1,6 @@
 from .state import GraphState
 from services.llm_factory import get_llm
+from services.gmail_service import send_email
 
 def llm_extraction_node(state: GraphState):
     llm = get_llm()
@@ -11,6 +12,13 @@ def llm_extraction_node(state: GraphState):
 
 def rescue_agent_node(state: GraphState):
     reply = "We are incredibly sorry for the frustration. A senior team member has been notified and will reach out to you personally to resolve this immediately."
+    
+    if state.get("customer_email") and "@" in state["customer_email"]:
+        try:
+            send_email(state["customer_email"], "Apology from CX Flow", reply)
+        except Exception as e:
+            print(f"Failed to send email: {e}")
+
     return {
         "action_type": "Rescue_Apology",
         "outgoing_message": reply,
@@ -19,6 +27,13 @@ def rescue_agent_node(state: GraphState):
 
 def escalation_agent_node(state: GraphState):
     reply = "Your issue has been escalated to our VIP support queue. You will receive a response within 1 hour."
+    
+    if state.get("customer_email") and "@" in state["customer_email"]:
+        try:
+            send_email(state["customer_email"], "Support Escalation Notice", reply)
+        except Exception as e:
+            print(f"Failed to send email: {e}")
+
     return {
         "action_type": "VIP_Escalation",
         "outgoing_message": reply,

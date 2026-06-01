@@ -3,6 +3,7 @@ from typing import TypedDict, Optional
 class GraphState(TypedDict):
     interaction_id: int
     text: str
+    customer_email: Optional[str]
     intent: Optional[str]
     sentiment: Optional[str]
     summary: Optional[str]

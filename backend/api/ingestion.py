@@ -64,3 +64,21 @@ def ingest_mock_email(payload: MockEmailPayload, db: Session = Depends(get_db)):
         },
         "action_taken": action_log.action_type
     }
+
+@router.get("/interactions")
+def get_recent_interactions(db: Session = Depends(get_db)):
+    # Fetch top 20 recent interactions
+    interactions = db.query(Interaction).order_by(Interaction.id.desc()).limit(20).all()
+    results = []
+    for it in interactions:
+        customer = db.query(Customer).filter(Customer.id == it.customer_id).first()
+        log = db.query(ActionLog).filter(ActionLog.interaction_id == it.id).first()
+        results.append({
+            "id": it.id,
+            "user": customer.email if customer else "Unknown",
+            "intent": it.ai_intent or "Unknown",
+            "sentiment": it.ai_sentiment or "Pending",
+            "action": log.action_type if log else "Pending",
+            "time": "Just now" # Simplification for MVP
+        })
+    return results
