@@ -32,12 +32,8 @@ class GeminiProvider(LLMProvider):
             model='gemini-2.5-flash',
             contents=prompt,
         )
-        try:
-            cleaned = response.text.strip().strip('```json').strip('```')
-            return json.loads(cleaned)
-        except Exception:
-            return {"sentiment": "Neutral", "intent": "General Support"}
-
+        cleaned = response.text.strip().strip('```json').strip('```')
+        return json.loads(cleaned)
 
 class OpenAIProvider(LLMProvider):
     def __init__(self):
@@ -53,18 +49,13 @@ class OpenAIProvider(LLMProvider):
 class LLMFactory:
     @staticmethod
     def get_provider() -> LLMProvider:
-        # Try Gemini First
+        # Strict enforcement: Fail loudly if no API keys are present
         if os.getenv("GEMINI_API_KEY"):
             return GeminiProvider()
-        # Fallback to OpenAI
         elif os.getenv("OPENAI_API_KEY"):
             return OpenAIProvider()
         else:
-            print("WARNING: No valid LLM API keys found. Using Mock Provider for testing.")
-            class MockProvider(LLMProvider):
-                def extract_intent_and_sentiment(self, text: str):
-                    return {"sentiment": "Negative", "intent": "Escalation"}
-            return MockProvider()
+            raise EnvironmentError("CRITICAL: No valid LLM API keys found. Enterprise pipeline requires valid AI credentials.")
 
 def get_llm():
     return LLMFactory.get_provider()

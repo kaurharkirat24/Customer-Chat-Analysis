@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv()
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 import models
@@ -68,31 +71,49 @@ async def gmail_polling_task():
                         db.commit()
                         db.refresh(interaction)
                         
-                        initial_state = {
-                            "interaction_id": interaction.id,
-                            "text": text,
-                            "customer_email": clean_email
-                        }
-                        final_state = app_graph.invoke(initial_state)
+                        try:
+                            initial_state = {
+                                "interaction_id": interaction.id,
+                                "text": text,
+                                "customer_email": clean_email
+                            }
+                            final_state = app_graph.invoke(initial_state)
+                            
+                            interaction.ai_intent = final_state.get("intent")
+                            interaction.ai_sentiment = final_state.get("sentiment")
+                            interaction.status = final_state.get("status", "Processed")
+                            db.commit()
+                            
+                            action_log = ActionLog(
+                                interaction_id=interaction.id,
+                                action_type=final_state.get("action_type"),
+                                outgoing_message=final_state.get("outgoing_message"),
+                                status="Success"
+                            )
+                            db.add(action_log)
+                            db.commit()
+                            print(f"✅ Processed email from {clean_email} -> Intent: {interaction.ai_intent}")
                         
-                        interaction.ai_intent = final_state.get("intent")
-                        interaction.ai_sentiment = final_state.get("sentiment")
-                        interaction.status = final_state.get("status", "Processed")
-                        db.commit()
-                        
-                        action_log = ActionLog(
-                            interaction_id=interaction.id,
-                            action_type=final_state.get("action_type"),
-                            outgoing_message=final_state.get("outgoing_message"),
-                            status="Success"
-                        )
-                        db.add(action_log)
-                        db.commit()
-                        print(f"✅ Processed email from {clean_email} -> Intent: {interaction.ai_intent}")
+                        except Exception as ai_err:
+                            print(f"❌ CRITICAL AI PIPELINE ERROR for {clean_email}: {ai_err}")
+                            interaction.ai_intent = "Pipeline_Error"
+                            interaction.ai_sentiment = "Pipeline_Error"
+                            interaction.status = "Failed_AI_Analysis"
+                            db.commit()
+                            
+                            action_log = ActionLog(
+                                interaction_id=interaction.id,
+                                action_type="System_Alert",
+                                outgoing_message=f"System failed to process interaction due to AI engine failure: {ai_err}",
+                                status="Failed"
+                            )
+                            db.add(action_log)
+                            db.commit()
+                            
                 finally:
                     db.close()
         except Exception as e:
-            print(f"Error in polling task: {e}")
+            print(f"Error in overall polling task loop: {e}")
             
         await asyncio.sleep(60)
 

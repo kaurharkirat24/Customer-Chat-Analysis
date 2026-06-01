@@ -4,6 +4,16 @@ import { Activity, Users, AlertTriangle, LogOut, CheckCircle, MessageSquare } fr
 const Dashboard = () => {
   const [recentInteractions, setRecentInteractions] = useState([]);
 
+  // Dynamic Metrics Calculation
+  const totalIngested = recentInteractions.length;
+  const highChurnRisk = recentInteractions.filter(
+    it => (it.intent && it.intent.includes('Cancel')) || (it.sentiment && (it.sentiment.includes('Frustrat') || it.sentiment.includes('Neg')))
+  ).length;
+  
+  // For MVP, we assume any successful LangGraph action is an "auto-resolution" unless it explicitly failed
+  const autoResolvedCount = recentInteractions.filter(it => it.action !== 'Pending' && it.action !== 'System_Alert').length;
+  const autoResolvedPercent = totalIngested > 0 ? Math.round((autoResolvedCount / totalIngested) * 100) : 100;
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     window.location.href = '/login';
@@ -38,21 +48,21 @@ const Dashboard = () => {
             <Activity color="var(--primary)" />
             <h3 style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Total Ingested</h3>
           </div>
-          <p style={{ fontSize: '32px', fontWeight: '600' }}>1,248</p>
+          <p style={{ fontSize: '32px', fontWeight: '600' }}>{totalIngested}</p>
         </div>
         <div className="glass-panel" style={{ padding: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
             <AlertTriangle color="var(--danger)" />
             <h3 style={{ color: 'var(--text-muted)', fontSize: '14px' }}>High Churn Risk</h3>
           </div>
-          <p style={{ fontSize: '32px', fontWeight: '600', color: 'var(--danger)' }}>12</p>
+          <p style={{ fontSize: '32px', fontWeight: '600', color: 'var(--danger)' }}>{highChurnRisk}</p>
         </div>
         <div className="glass-panel" style={{ padding: '24px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '12px' }}>
             <CheckCircle color="var(--success)" />
             <h3 style={{ color: 'var(--text-muted)', fontSize: '14px' }}>Auto-Resolved</h3>
           </div>
-          <p style={{ fontSize: '32px', fontWeight: '600', color: 'var(--success)' }}>84%</p>
+          <p style={{ fontSize: '32px', fontWeight: '600', color: 'var(--success)' }}>{autoResolvedPercent}%</p>
         </div>
       </div>
 
