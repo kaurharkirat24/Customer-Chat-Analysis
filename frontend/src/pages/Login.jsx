@@ -77,14 +77,14 @@ const Login = () => {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '20px' }}>
-        <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', padding: '40px' }}>
+        <div className="glass-panel" style={{ width: '100%', maxWidth: '420px', padding: '48px 40px', borderRadius: '24px' }}>
           
-          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
-            <div style={{ display: 'inline-flex', padding: '12px', background: 'var(--primary)', borderRadius: '12px', marginBottom: '16px' }}>
-              <Fingerprint size={32} color="white" />
+          <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+            <div style={{ display: 'inline-flex', padding: '16px', background: 'rgba(127, 149, 209, 0.1)', border: '1px solid rgba(127, 149, 209, 0.3)', borderRadius: '16px', marginBottom: '20px' }}>
+              <Fingerprint size={36} color="var(--primary)" />
             </div>
-            <h2 style={{ fontSize: '24px', fontWeight: '600' }}>CX Flow</h2>
-            <p style={{ color: 'var(--text-muted)', marginTop: '8px' }}>
+            <h2 className="gradient-text" style={{ fontSize: '28px', fontWeight: '700', letterSpacing: '-0.5px' }}>CX Flow</h2>
+            <p style={{ color: 'var(--text-muted)', marginTop: '8px', fontSize: '15px' }}>
               {isSignUp ? 'Create your enterprise account.' : 'Sign in to your enterprise command center.'}
             </p>
           </div>

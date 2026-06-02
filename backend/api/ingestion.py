@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from models import get_db, Interaction, ActionLog, Customer
 from graph.workflow import app_graph
 from pydantic import BaseModel
+from datetime import datetime, timedelta, timezone
 
 router = APIRouter(prefix="/ingestion", tags=["ingestion"])
 
@@ -66,9 +67,28 @@ def ingest_mock_email(payload: MockEmailPayload, db: Session = Depends(get_db)):
     }
 
 @router.get("/interactions")
-def get_recent_interactions(db: Session = Depends(get_db)):
-    # Fetch top 20 recent interactions
-    interactions = db.query(Interaction).order_by(Interaction.id.desc()).limit(20).all()
+def get_recent_interactions(timeframe: str = Query("all", description="Timeframe filter: 1h, 1d, 15d, 30d, 1y, all"), db: Session = Depends(get_db)):
+    query = db.query(Interaction)
+    
+    if timeframe != "all":
+        now = datetime.now(timezone.utc)
+        if timeframe == "1h":
+            threshold = now - timedelta(hours=1)
+        elif timeframe == "1d":
+            threshold = now - timedelta(days=1)
+        elif timeframe == "15d":
+            threshold = now - timedelta(days=15)
+        elif timeframe == "30d":
+            threshold = now - timedelta(days=30)
+        elif timeframe == "1y":
+            threshold = now - timedelta(days=365)
+        else:
+            threshold = None
+            
+        if threshold:
+            query = query.filter(Interaction.created_at >= threshold)
+
+    interactions = query.order_by(Interaction.id.desc()).limit(100).all()
     results = []
     for it in interactions:
         customer = db.query(Customer).filter(Customer.id == it.customer_id).first()

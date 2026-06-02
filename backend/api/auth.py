@@ -20,7 +20,7 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
     if not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect email or password")
     
-    access_token = create_access_token(data={"sub": user.email})
+    access_token = create_access_token(data={"sub": user.email, "name": user.name})
     return {"access_token": access_token, "token_type": "bearer"}
 
 # Standard JWT Signup
@@ -36,7 +36,7 @@ def signup(user_in: UserCreate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(new_user)
     
-    access_token = create_access_token(data={"sub": new_user.email})
+    access_token = create_access_token(data={"sub": new_user.email, "name": new_user.name})
     return {"access_token": access_token, "token_type": "bearer"}
 
 class GoogleTokenRequest(BaseModel):
@@ -60,7 +60,7 @@ def google_auth(request: GoogleTokenRequest, db: Session = Depends(get_db)):
             db.commit()
             db.refresh(user)
             
-        access_token = create_access_token(data={"sub": user.email})
+        access_token = create_access_token(data={"sub": user.email, "name": user.name})
         return {"access_token": access_token, "token_type": "bearer"}
     except ValueError:
         # Invalid token
