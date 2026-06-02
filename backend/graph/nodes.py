@@ -88,9 +88,35 @@ def compliance_agent_node(state: GraphState):
     }
 
 def human_review_node(state: GraphState):
+    # Generate an actual draft response for the human reviewer to approve/edit
+    draft_message = None
+    try:
+        llm = get_llm()
+        prompt = f"""You are a professional customer service agent. Draft a short, empathetic email reply 
+to the following customer message. Be helpful, concise and professional. Do NOT include subject line or greetings like "Dear Customer". 
+Just write the body of the response.
+
+Customer message:
+{state.get("text", "")}
+
+Detected intent: {state.get("intent", "Unknown")}
+Detected sentiment: {state.get("sentiment", "Unknown")}
+"""
+        response = llm.client.models.generate_content(
+            model='gemini-2.5-flash',
+            contents=prompt,
+        )
+        draft_message = response.text.strip()
+    except Exception as e:
+        print(f"Failed to generate draft for human review: {e}")
+
+    if not draft_message:
+        # Fallback if LLM call fails
+        draft_message = "Thank you for reaching out. We have received your message and a team member will review and respond shortly."
+
     return {
         "action_type": "Human_Review_Required",
-        "outgoing_message": "AI Confidence Low or High Risk. Requires human approval before sending.",
+        "outgoing_message": draft_message,
         "status": "Draft_Pending_Approval"
     }
 
