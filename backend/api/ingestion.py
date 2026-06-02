@@ -67,7 +67,14 @@ def ingest_mock_email(payload: MockEmailPayload, db: Session = Depends(get_db)):
     }
 
 @router.get("/interactions")
-def get_recent_interactions(timeframe: str = Query("all", description="Timeframe filter: 1h, 1d, 15d, 30d, 1y, all"), db: Session = Depends(get_db)):
+def get_recent_interactions(
+    timeframe: str = Query("all", description="Timeframe filter: 1h, 1d, 15d, 30d, 1y, all"),
+    search: str = Query("", description="Search by email or message content"),
+    status: str = Query("", description="Filter by status"),
+    intent: str = Query("", description="Filter by intent"),
+    priority: str = Query("", description="Filter by priority"),
+    db: Session = Depends(get_db)
+):
     query = db.query(Interaction)
     
     if timeframe != "all":
@@ -88,14 +95,33 @@ def get_recent_interactions(timeframe: str = Query("all", description="Timeframe
         if threshold:
             query = query.filter(Interaction.created_at >= threshold)
 
+    if status:
+        query = query.filter(Interaction.status == status)
+    if intent:
+        query = query.filter(Interaction.ai_intent.ilike(f"%{intent}%"))
+    if priority:
+        query = query.filter(Interaction.priority == priority)
+
+    # Search across customer email and original message
+    if search:
+        query = query.join(Customer, Interaction.customer_id == Customer.id).filter(
+            (Customer.email.ilike(f"%{search}%")) | 
+            (Interaction.original_message.ilike(f"%{search}%"))
+        )
+
     interactions = query.order_by(Interaction.id.desc()).limit(100).all()
     results = []
     for it in interactions:
         customer = db.query(Customer).filter(Customer.id == it.customer_id).first()
         log = db.query(ActionLog).filter(ActionLog.interaction_id == it.id).first()
+        
+        # Truncate message for preview
+        preview = it.original_message[:120] + "..." if it.original_message and len(it.original_message) > 120 else it.original_message
+
         results.append({
             "id": it.id,
             "user": customer.email if customer else "Unknown",
+            "customer_name": customer.name if customer else "Unknown",
             "intent": it.ai_intent or "Unknown",
             "sentiment": it.ai_sentiment or "Pending",
             "action": log.action_type if log else "Pending",
@@ -103,6 +129,8 @@ def get_recent_interactions(timeframe: str = Query("all", description="Timeframe
             "confidence": it.confidence_score or 1.0,
             "status": it.status or "Pending",
             "feature": it.feature_tag,
-            "time": "Just now" # Simplification for MVP
+            "message_preview": preview,
+            "created_at": it.created_at.isoformat() if it.created_at else None,
         })
     return results
+

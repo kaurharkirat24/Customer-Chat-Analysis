@@ -27,7 +27,9 @@ class Interaction(Base):
     confidence_score = Column(Float, default=1.0)
     priority = Column(String, default="P3") # P0, P1, P2, P3
     feature_tag = Column(String, nullable=True) # Extracted feature for feedback
-    status = Column(String, default="Pending") # Pending, Resolved, Escalated, Draft_Pending_Approval
+    status = Column(String, default="Pending") # Pending, Resolved, Escalated, Draft_Pending_Approval, Resolved_By_Human
+    resolved_by = Column(String, nullable=True) # Email of internal user who resolved
+    resolution_note = Column(Text, nullable=True) # Human's note when self-resolving
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     customer = relationship("Customer", back_populates="interactions")
