@@ -1,0 +1,16 @@
+fastapi
+uvicorn
+sqlalchemy
+google-genai
+langchain
+langgraph
+langchain-google-genai
+pydantic[email]
+pyjwt
+passlib[bcrypt]
+python-dotenv
+httpx
+python-multipart
+google-api-python-client
+google-auth-httplib2
+google-auth-oauthlib
