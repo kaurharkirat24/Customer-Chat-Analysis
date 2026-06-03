@@ -70,11 +70,25 @@ def sync_poll_and_process():
                 db.commit()
                 db.refresh(interaction)
                 
+                for att_meta in email_data.get("attachments", []):
+                    from models.attachment import Attachment
+                    new_att = Attachment(
+                        interaction_id=interaction.id,
+                        filename=att_meta["filename"],
+                        file_type=att_meta["file_type"],
+                        size=att_meta["size"],
+                        s3_key=att_meta["s3_key"],
+                        s3_url=att_meta["s3_url"]
+                    )
+                    db.add(new_att)
+                db.commit()
+                
                 try:
                     initial_state = {
                         "interaction_id": interaction.id,
                         "text": text,
-                        "customer_email": clean_email
+                        "customer_email": clean_email,
+                        "attachments": email_data.get("attachments", [])
                     }
                     final_state = app_graph.invoke(initial_state)
                     
