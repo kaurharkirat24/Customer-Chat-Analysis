@@ -46,44 +46,44 @@ def sync_poll_and_process():
         db = SessionLocal()
         try:
             for email_data in emails:
-                sender = email_data["sender"]
-                if "<" in sender and ">" in sender:
-                    clean_email = sender.split("<")[1].split(">")[0]
-                else:
-                    clean_email = sender
-
-                text = email_data["subject"] + "\n\n" + email_data["body"]
-                
-                customer = db.query(Customer).filter(Customer.email == clean_email).first()
-                if not customer:
-                    customer = Customer(email=clean_email, name=sender.split("<")[0].strip())
-                    db.add(customer)
-                    db.commit()
-                    db.refresh(customer)
-                
-                interaction = Interaction(
-                    customer_id=customer.id,
-                    channel="Gmail",
-                    original_message=text
-                )
-                db.add(interaction)
-                db.commit()
-                db.refresh(interaction)
-                
-                for att_meta in email_data.get("attachments", []):
-                    from models.attachment import Attachment
-                    new_att = Attachment(
-                        interaction_id=interaction.id,
-                        filename=att_meta["filename"],
-                        file_type=att_meta["file_type"],
-                        size=att_meta["size"],
-                        s3_key=att_meta["s3_key"],
-                        s3_url=att_meta["s3_url"]
-                    )
-                    db.add(new_att)
-                db.commit()
-                
                 try:
+                    sender = email_data["sender"]
+                    if "<" in sender and ">" in sender:
+                        clean_email = sender.split("<")[1].split(">")[0]
+                    else:
+                        clean_email = sender
+
+                    text = email_data["subject"] + "\n\n" + email_data["body"]
+                    
+                    customer = db.query(Customer).filter(Customer.email == clean_email).first()
+                    if not customer:
+                        customer = Customer(email=clean_email, name=sender.split("<")[0].strip())
+                        db.add(customer)
+                        db.commit()
+                        db.refresh(customer)
+                    
+                    interaction = Interaction(
+                        customer_id=customer.id,
+                        channel="Gmail",
+                        original_message=text
+                    )
+                    db.add(interaction)
+                    db.commit()
+                    db.refresh(interaction)
+                    
+                    for att_meta in email_data.get("attachments", []):
+                        from models.attachment import Attachment
+                        new_att = Attachment(
+                            interaction_id=interaction.id,
+                            filename=att_meta["filename"],
+                            file_type=att_meta["file_type"],
+                            size=att_meta["size"],
+                            s3_key=att_meta["s3_key"],
+                            s3_url=att_meta["s3_url"]
+                        )
+                        db.add(new_att)
+                    db.commit()
+                    
                     initial_state = {
                         "interaction_id": interaction.id,
                         "text": text,
@@ -111,20 +111,26 @@ def sync_poll_and_process():
                     print(f"✅ Processed email from {clean_email} -> Intent: {interaction.ai_intent}")
                 
                 except Exception as ai_err:
-                    print(f"❌ CRITICAL AI PIPELINE ERROR for {clean_email}: {ai_err}")
-                    interaction.ai_intent = "Pipeline_Error"
-                    interaction.ai_sentiment = "Pipeline_Error"
-                    interaction.status = "Failed_AI_Analysis"
-                    db.commit()
-                    
-                    action_log = ActionLog(
-                        interaction_id=interaction.id,
-                        action_type="System_Alert",
-                        outgoing_message=f"System failed to process interaction due to AI engine failure: {ai_err}",
-                        status="Failed"
-                    )
-                    db.add(action_log)
-                    db.commit()
+                    print(f"❌ CRITICAL AI PIPELINE ERROR for {email_data.get('sender')}: {ai_err}")
+                    # Attempt to log failure if interaction was created
+                    try:
+                        if 'interaction' in locals() and interaction.id:
+                            interaction.ai_intent = "Pipeline_Error"
+                            interaction.ai_sentiment = "Pipeline_Error"
+                            interaction.status = "Failed_AI_Analysis"
+                            db.commit()
+                            
+                            action_log = ActionLog(
+                                interaction_id=interaction.id,
+                                action_type="System_Alert",
+                                outgoing_message=f"System failed to process interaction due to AI engine failure: {ai_err}",
+                                status="Failed"
+                            )
+                            db.add(action_log)
+                            db.commit()
+                    except Exception as fallback_err:
+                        print(f"Failed to save fallback error state: {fallback_err}")
+                        db.rollback()
                     
         finally:
             db.close()
