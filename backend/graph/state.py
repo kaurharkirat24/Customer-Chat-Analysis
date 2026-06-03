@@ -10,3 +10,6 @@ class GraphState(TypedDict):
     action_type: Optional[str]
     outgoing_message: Optional[str]
     status: Optional[str]
+    priority: Optional[str]
+    confidence_score: Optional[float]
+    feature_tag: Optional[str]

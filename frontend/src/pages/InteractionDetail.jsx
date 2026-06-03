@@ -118,13 +118,13 @@ const InteractionDetail = () => {
         <div className="glass-panel" style={{ padding: '24px' }}>
           <h3 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '16px' }}>AI Analysis</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            <div><span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Intent</span><br/><span style={{ fontWeight: '600' }}>{detail.ai_intent}</span></div>
-            <div><span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Sentiment</span><br/><span style={{ fontWeight: '600' }}>{detail.ai_sentiment}</span></div>
-            <div><span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Confidence</span><br/><span style={{ fontWeight: '600', color: detail.confidence < 0.75 ? 'var(--warning)' : 'var(--success)' }}>{Math.round((detail.confidence || 0) * 100)}%</span></div>
+            <div><span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Intent</span><br /><span style={{ fontWeight: '600' }}>{detail.ai_intent}</span></div>
+            <div><span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Sentiment</span><br /><span style={{ fontWeight: '600' }}>{detail.ai_sentiment}</span></div>
+            <div><span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Confidence</span><br /><span style={{ fontWeight: '600', color: detail.confidence < 0.75 ? 'var(--warning)' : 'var(--success)' }}>{Math.round((detail.confidence || 0) * 100)}%</span></div>
             {detail.feature_tag && (
-              <div><span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Feature</span><br/><span className="pill" style={{ background: '#FEF3C7', color: 'var(--warning)', border: '1px solid #FDE68A', marginTop: '4px' }}>{detail.feature_tag}</span></div>
+              <div><span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Feature</span><br /><span className="pill" style={{ background: '#FEF3C7', color: 'var(--warning)', border: '1px solid #FDE68A', marginTop: '4px' }}>{detail.feature_tag}</span></div>
             )}
-            <div><span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Channel</span><br/><span style={{ fontWeight: '500' }}>{detail.channel}</span></div>
+            <div><span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Channel</span><br /><span style={{ fontWeight: '500' }}>{detail.channel}</span></div>
           </div>
         </div>
       </div>
