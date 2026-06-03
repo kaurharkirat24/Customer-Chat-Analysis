@@ -4,7 +4,7 @@ from services.gmail_service import send_email
 
 def llm_extraction_node(state: GraphState):
     llm = get_llm()
-    result = llm.extract_intent_and_sentiment(state["text"])
+    result = llm.extract_intent_and_sentiment(state["text"], state.get("attachments", []))
     return {
         "intent": result.get("intent", "General Support"),
         "sentiment": result.get("sentiment", "Neutral"),

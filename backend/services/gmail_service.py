@@ -42,25 +42,69 @@ def fetch_unread_emails():
             sender = next((h['value'] for h in headers if h['name'] == 'From'), "Unknown")
             subject = next((h['value'] for h in headers if h['name'] == 'Subject'), "No Subject")
             
-            # Extract body
-            body = ""
-            if 'parts' in msg_data['payload']:
-                for part in msg_data['payload']['parts']:
-                    if part['mimeType'] == 'text/plain':
+            # Helper to recursively extract body and attachments
+            def extract_parts(parts, body_text="", extracted_attachments=None):
+                if extracted_attachments is None:
+                    extracted_attachments = []
+                for part in parts:
+                    mime_type = part.get('mimeType')
+                    filename = part.get('filename')
+                    
+                    # Nested parts (e.g., multipart/alternative)
+                    if 'parts' in part:
+                        body_text, extracted_attachments = extract_parts(part['parts'], body_text, extracted_attachments)
+                    
+                    if mime_type == 'text/plain' and not filename:
                         data = part['body'].get('data')
                         if data:
-                            body = base64.urlsafe_b64decode(data).decode('utf-8')
-                            break
+                            body_text += base64.urlsafe_b64decode(data).decode('utf-8') + "\n"
+                    elif filename:
+                        attachment_id = part['body'].get('attachmentId')
+                        if attachment_id:
+                            try:
+                                attachment_obj = service.users().messages().attachments().get(
+                                    userId='me', messageId=msg['id'], id=attachment_id
+                                ).execute()
+                                data = attachment_obj.get('data')
+                                if data:
+                                    file_data = base64.urlsafe_b64decode(data)
+                                    extracted_attachments.append({
+                                        "filename": filename,
+                                        "mime_type": mime_type,
+                                        "file_data": file_data
+                                    })
+                            except Exception as e:
+                                print(f"Error fetching attachment {filename}: {e}")
+                return body_text, extracted_attachments
+
+            body = ""
+            raw_attachments = []
+            
+            if 'parts' in msg_data['payload']:
+                body, raw_attachments = extract_parts(msg_data['payload']['parts'])
             else:
                 data = msg_data['payload']['body'].get('data')
                 if data:
                     body = base64.urlsafe_b64decode(data).decode('utf-8')
                     
+            from services.security_service import validate_and_upload_attachment, SecurityValidationException
+            
+            processed_attachments = []
+            for att in raw_attachments:
+                try:
+                    meta = validate_and_upload_attachment(att['filename'], att['file_data'], att['mime_type'])
+                    processed_attachments.append(meta)
+                except SecurityValidationException as e:
+                    print(f"Attachment {att['filename']} failed security validation: {e}")
+                except Exception as e:
+                    print(f"Attachment {att['filename']} failed to upload: {e}")
+
             parsed_emails.append({
                 "id": msg['id'],
                 "sender": sender,
                 "subject": subject,
-                "body": body
+                "body": body.strip(),
+                "attachments": processed_attachments
             })
             
             # Mark as read (remove UNREAD label)

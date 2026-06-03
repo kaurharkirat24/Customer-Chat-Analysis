@@ -34,6 +34,7 @@ class Interaction(Base):
 
     customer = relationship("Customer", back_populates="interactions")
     action_logs = relationship("ActionLog", back_populates="interaction")
+    attachments = relationship("Attachment", back_populates="interaction")
 
 class ActionLog(Base):
     __tablename__ = "action_logs"

@@ -16,9 +16,41 @@ class GeminiProvider(LLMProvider):
         else:
             self.client = None
 
-    def extract_intent_and_sentiment(self, text: str) -> dict:
+    def extract_intent_and_sentiment(self, text: str, attachments: list = None) -> dict:
         if not self.client:
             raise ValueError("GEMINI_API_KEY not set")
+            
+        uploaded_files = []
+        if attachments:
+            import tempfile
+            from services.security_service import get_s3_client
+            
+            s3_client = get_s3_client()
+            bucket_name = os.getenv("AWS_S3_BUCKET_NAME")
+            
+            for att in attachments:
+                s3_key = att.get("s3_key")
+                if s3_key and bucket_name:
+                    tmp_path = None
+                    try:
+                        # Download to a temporary file
+                        suffix = os.path.splitext(att.get("filename", ""))[1]
+                        with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp_file:
+                            tmp_path = tmp_file.name
+                            
+                        s3_client.download_file(bucket_name, s3_key, tmp_path)
+                        
+                        # Upload to Gemini
+                        gemini_file = self.client.files.upload(file=tmp_path, mime_type=att.get("file_type"))
+                        uploaded_files.append(gemini_file)
+                    except Exception as e:
+                        print(f"Failed to process attachment for Gemini: {e}")
+                    finally:
+                        if tmp_path and os.path.exists(tmp_path):
+                            try:
+                                os.remove(tmp_path)
+                            except Exception as e:
+                                print(f"Warning: Failed to clean up temp file {tmp_path}: {e}")
         
         prompt = f"""
         Analyze the following customer service interaction with an Enterprise-grade lens.
@@ -36,9 +68,14 @@ class GeminiProvider(LLMProvider):
 
         Text: {text}
         """
+        
+        contents = [prompt]
+        if uploaded_files:
+            contents.extend(uploaded_files)
+            
         response = self.client.models.generate_content(
             model='gemini-2.5-flash',
-            contents=prompt,
+            contents=contents,
         )
         cleaned = response.text.strip().strip('```json').strip('```')
         return json.loads(cleaned)

@@ -13,3 +13,4 @@ class GraphState(TypedDict):
     priority: Optional[str]
     confidence_score: Optional[float]
     feature_tag: Optional[str]
+    attachments: Optional[list]
