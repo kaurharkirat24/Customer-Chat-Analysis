@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, AlertTriangle } from 'lucide-react';
 
-const API = 'http://localhost:8000';
+const API = '/api';
 
 const ReviewQueue = () => {
   const navigate = useNavigate();

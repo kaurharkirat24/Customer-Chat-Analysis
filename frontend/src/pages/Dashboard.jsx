@@ -29,7 +29,7 @@ const Dashboard = () => {
       } catch (e) { console.error("Invalid token", e); }
     }
 
-    fetch(`http://localhost:8000/ingestion/interactions?timeframe=${timeframe}`)
+    fetch(`/api/ingestion/interactions?timeframe=${timeframe}`)
       .then(res => res.json())
       .then(data => setRecentInteractions(data))
       .catch(err => console.error("Error fetching interactions:", err));

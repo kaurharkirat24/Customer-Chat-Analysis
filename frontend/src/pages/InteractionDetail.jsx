@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Send, UserCheck, RotateCcw, Clock, Bot, User, ShieldCheck } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
 
-const API = 'http://localhost:8000';
+const API = '/api';
 
 const InteractionDetail = () => {
   const { id } = useParams();

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Filter, MessageSquare } from 'lucide-react';
 
-const API = 'http://localhost:8000';
+const API = '/api';
 
 const Interactions = () => {
   const navigate = useNavigate();

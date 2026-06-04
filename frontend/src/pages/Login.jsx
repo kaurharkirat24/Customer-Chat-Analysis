@@ -35,7 +35,7 @@ const Login = () => {
         headers['Content-Type'] = 'application/x-www-form-urlencoded';
       }
 
-      const res = await fetch(`http://localhost:8000${endpoint}`, {
+      const res = await fetch(`/api${endpoint}`, {
         method: 'POST',
         headers: headers,
         body: bodyData
@@ -56,7 +56,7 @@ const Login = () => {
 
   const handleGoogleSuccess = async (credentialResponse) => {
     try {
-      const res = await fetch('http://localhost:8000/auth/google', {
+      const res = await fetch('/api/auth/google', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

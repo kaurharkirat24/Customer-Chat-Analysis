@@ -20,10 +20,10 @@ from api.ingestion import router as ingestion_router
 from api.review import router as review_router
 from api.customers import router as customers_router
 
-app.include_router(auth_router)
-app.include_router(ingestion_router)
-app.include_router(review_router)
-app.include_router(customers_router)
+app.include_router(auth_router, prefix="/api")
+app.include_router(ingestion_router, prefix="/api")
+app.include_router(review_router, prefix="/api")
+app.include_router(customers_router, prefix="/api")
 
 @app.get("/health")
 def health_check():

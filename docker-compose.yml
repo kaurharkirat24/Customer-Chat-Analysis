@@ -1,0 +1,58 @@
+# CXFlow Database Architecture
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: cxflow-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-cxflow_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-cxflow_password}
+      POSTGRES_DB: ${POSTGRES_DB:-cxflow_db}
+    env_file:
+      - backend/.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - cxflow-net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-cxflow_user} -d ${POSTGRES_DB:-cxflow_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+    container_name: cxflow-backend
+    restart: always
+    env_file:
+      - backend/.env
+    ports:
+      - "8000:8000"
+    networks:
+      - cxflow-net
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: cxflow-frontend
+    restart: always
+    ports:
+      - "80:80"
+    networks:
+      - cxflow-net
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
+
+networks:
+  cxflow-net:
+    driver: bridge
