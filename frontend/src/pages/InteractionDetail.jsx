@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Send, UserCheck, RotateCcw, Clock, Bot, User, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, Send, UserCheck, RotateCcw, Clock, Bot, User, ShieldCheck, Paperclip, FileText, Image as ImageIcon, FileVideo, FileAudio, FileCode, FileArchive } from 'lucide-react';
 import { jwtDecode } from 'jwt-decode';
 
 const API = '/api';
@@ -81,6 +81,26 @@ const InteractionDetail = () => {
     return new Date(iso).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' });
   };
 
+  const getFileIcon = (fileType) => {
+    if (!fileType) return <Paperclip size={18} color="var(--text-muted)" />;
+    if (fileType.includes('pdf')) return <FileText size={18} color="#EF4444" />;
+    if (fileType.includes('image') || fileType.includes('gif')) return <ImageIcon size={18} color="#3B82F6" />;
+    if (fileType.includes('video')) return <FileVideo size={18} color="#8B5CF6" />;
+    if (fileType.includes('audio')) return <FileAudio size={18} color="#F59E0B" />;
+    if (fileType.includes('zip') || fileType.includes('tar') || fileType.includes('rar')) return <FileArchive size={18} color="#6B7280" />;
+    if (fileType.includes('csv') || fileType.includes('excel') || fileType.includes('spreadsheet')) return <FileText size={18} color="#10B981" />;
+    if (fileType.includes('text') || fileType.includes('json') || fileType.includes('xml')) return <FileCode size={18} color="#6366F1" />;
+    return <Paperclip size={18} color="var(--text-muted)" />;
+  };
+
+  const formatBytes = (bytes) => {
+    if (!bytes) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+  };
+
   return (
     <div style={{ padding: '32px', maxWidth: '960px' }}>
       {/* Back button */}
@@ -121,10 +141,52 @@ const InteractionDetail = () => {
 
       {/* Two-column layout */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '24px', marginBottom: '32px' }}>
-        {/* Original Message */}
-        <div className="glass-panel" style={{ padding: '24px' }}>
-          <h3 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '16px' }}>Original Message</h3>
-          <p style={{ lineHeight: '1.7', whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>{detail.original_message}</p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          {/* Original Message */}
+          <div className="glass-panel" style={{ padding: '24px' }}>
+            <h3 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '16px' }}>Original Message</h3>
+            <p style={{ lineHeight: '1.7', whiteSpace: 'pre-wrap', color: 'var(--text-main)' }}>{detail.original_message}</p>
+          </div>
+
+          {/* Attachments Section */}
+          {detail.attachments && detail.attachments.length > 0 && (
+            <div className="glass-panel" style={{ padding: '24px' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '16px' }}>
+                Attachments ({detail.attachments.length})
+              </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {detail.attachments.map(att => (
+                  <a
+                    key={att.id}
+                    href={att.s3_url}
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '12px', padding: '12px',
+                      background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '8px',
+                      textDecoration: 'none', color: 'var(--text-main)', transition: 'border-color 0.2s',
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.borderColor = 'var(--primary)'}
+                    onMouseLeave={(e) => e.currentTarget.style.borderColor = 'var(--border)'}
+                  >
+                    <div style={{ padding: '10px', background: 'var(--bg-body)', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {getFileIcon(att.file_type)}
+                    </div>
+                    <div style={{ flex: 1, overflow: 'hidden' }}>
+                      <div style={{ fontWeight: '500', fontSize: '14px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {att.filename}
+                      </div>
+                      <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginTop: '2px', display: 'flex', gap: '8px' }}>
+                        <span>{formatBytes(att.size)}</span>
+                        <span>•</span>
+                        <span style={{ textTransform: 'uppercase' }}>{(att.file_type || 'unknown').split('/').pop()}</span>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* AI Analysis */}

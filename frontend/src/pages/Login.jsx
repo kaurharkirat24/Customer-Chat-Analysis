@@ -149,7 +149,7 @@ const Login = () => {
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={() => setError('Google Login Failed')}
-              theme="filled_black"
+              theme="outline"
               shape="rectangular"
               text={isSignUp ? "signup_with" : "signin_with"}
               size="large"

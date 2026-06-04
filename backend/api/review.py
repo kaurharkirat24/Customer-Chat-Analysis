@@ -66,6 +66,13 @@ def get_review_detail(interaction_id: int, db: Session = Depends(get_db)):
         .all()
     )
 
+    from models.attachment import Attachment
+    attachments = (
+        db.query(Attachment)
+        .filter(Attachment.interaction_id == interaction.id)
+        .all()
+    )
+
     return {
         "id": interaction.id,
         "customer": {
@@ -96,6 +103,16 @@ def get_review_detail(interaction_id: int, db: Session = Depends(get_db)):
             }
             for log in logs
         ],
+        "attachments": [
+            {
+                "id": att.id,
+                "filename": att.filename,
+                "file_type": att.file_type,
+                "size": att.size,
+                "s3_url": att.s3_url
+            }
+            for att in attachments
+        ]
     }
 
 
