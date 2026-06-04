@@ -97,6 +97,7 @@ def sync_poll_and_process():
                     interaction.confidence_score = final_state.get("confidence_score", 1.0)
                     interaction.priority = final_state.get("priority", "P3")
                     interaction.feature_tag = final_state.get("feature_tag")
+                    interaction.is_spam = final_state.get("is_spam", False)
                     interaction.status = final_state.get("status", "Processed")
                     db.commit()
                     

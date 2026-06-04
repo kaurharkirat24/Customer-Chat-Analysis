@@ -129,6 +129,7 @@ def get_recent_interactions(
             "confidence": it.confidence_score or 1.0,
             "status": it.status or "Pending",
             "feature": it.feature_tag,
+            "is_spam": it.is_spam,
             "message_preview": preview,
             "created_at": it.created_at.isoformat() if it.created_at else None,
         })

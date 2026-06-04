@@ -65,6 +65,7 @@ class GeminiProvider(LLMProvider):
            - P2 = Standard Billing/Refunds/Cancel
            - P3 = Normal Support/Feedback
         5. 'feature': A short 1-3 word tag describing the product feature mentioned (e.g., 'CSV Import', 'Login Flow'). If none, return null.
+        6. 'is_spam': A boolean (true or false). Mark true if the email is marketing, phishing, generic spam, or completely irrelevant to customer support.
 
         Text: {text}
         """

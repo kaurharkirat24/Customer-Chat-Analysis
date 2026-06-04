@@ -10,7 +10,8 @@ def llm_extraction_node(state: GraphState):
         "sentiment": result.get("sentiment", "Neutral"),
         "confidence_score": result.get("confidence", 1.0),
         "priority": result.get("priority", "P3"),
-        "feature_tag": result.get("feature", None)
+        "feature_tag": result.get("feature", None),
+        "is_spam": result.get("is_spam", False)
     }
 
 def retention_agent_node(state: GraphState):

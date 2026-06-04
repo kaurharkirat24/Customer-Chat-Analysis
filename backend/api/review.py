@@ -81,6 +81,7 @@ def get_review_detail(interaction_id: int, db: Session = Depends(get_db)):
         "confidence": interaction.confidence_score,
         "priority": interaction.priority,
         "feature_tag": interaction.feature_tag,
+        "is_spam": interaction.is_spam,
         "status": interaction.status,
         "resolved_by": interaction.resolved_by,
         "resolution_note": interaction.resolution_note,

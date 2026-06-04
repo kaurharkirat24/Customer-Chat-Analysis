@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Float
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Text, Float, Boolean
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from .database import Base
@@ -20,6 +20,7 @@ class Interaction(Base):
     id = Column(Integer, primary_key=True, index=True)
     customer_id = Column(Integer, ForeignKey("customers.id"))
     channel = Column(String) # Email, Slack, etc
+    is_spam = Column(Boolean, default=False, index=True)
     original_message = Column(Text, nullable=False)
     ai_intent = Column(String)
     ai_sentiment = Column(String)

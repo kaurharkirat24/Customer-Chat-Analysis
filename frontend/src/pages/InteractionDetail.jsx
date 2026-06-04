@@ -106,6 +106,19 @@ const InteractionDetail = () => {
         </div>
       </div>
 
+      {/* Spam Warning Banner */}
+      {detail.is_spam && (
+        <div style={{ padding: '16px 20px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '8px', marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <ShieldCheck size={24} color="var(--danger)" />
+          <div>
+            <h4 style={{ color: 'var(--danger)', fontWeight: '600', margin: 0, fontSize: '15px' }}>Spam / Phishing Detected</h4>
+            <p style={{ color: 'var(--danger)', margin: '4px 0 0 0', fontSize: '14px', opacity: 0.9 }}>
+              The AI has flagged this interaction as Spam or a Phishing attempt. Please exercise caution, especially with links or attachments.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Two-column layout */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '24px', marginBottom: '32px' }}>
         {/* Original Message */}
