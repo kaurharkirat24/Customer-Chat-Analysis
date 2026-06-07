@@ -30,6 +30,8 @@ services:
     restart: always
     env_file:
       - backend/.env
+    environment:
+      DATABASE_URL: "postgresql://cxflow_user:cxflow_password@db:5432/cxflow_db"
     ports:
       - "8000:8000"
     networks:

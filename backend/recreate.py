@@ -1,7 +1,10 @@
 import os
+from dotenv import load_dotenv
+load_dotenv()
 from sqlalchemy import create_engine
 from models.database import Base
-from models import interaction, attachment, action_log  # Ensure all models are loaded
+from models.interaction import Interaction, ActionLog, Customer
+from models.attachment import Attachment
 
 # Get the URL
 url = os.getenv("DATABASE_URL")

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, MessageSquare } from 'lucide-react';
+import { Search, Filter, MessageSquare, Paperclip } from 'lucide-react';
 
 const API = '/api';
 
@@ -148,7 +148,14 @@ const Interactions = () => {
                   <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{item.user}</div>
                 </td>
                 <td style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '13px', maxWidth: '320px' }}>
-                  {item.message_preview || '-'}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                    {item.has_attachments && (
+                      <div title={`Attachments: ${item.attachment_names?.join(', ') || 'files'}`} style={{ marginTop: '2px', color: 'var(--primary)' }}>
+                        <Paperclip size={14} />
+                      </div>
+                    )}
+                    <span>{item.message_preview || '-'}</span>
+                  </div>
                 </td>
                 <td style={{ padding: '16px' }}>
                   <span className="pill" style={{ background: '#F1F5F9', color: 'var(--primary)', border: '1px solid #E2E8F0' }}>

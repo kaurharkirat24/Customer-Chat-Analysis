@@ -97,3 +97,23 @@ def validate_and_upload_attachment(filename: str, file_data: bytes, mime_type: s
         "s3_key": s3_key,
         "s3_url": s3_url
     }
+
+def generate_presigned_url(s3_key: str, expiration: int = 3600) -> str:
+    """
+    Generate a presigned URL for secure, temporary access to an S3 object.
+    """
+    bucket_name = os.getenv("AWS_S3_BUCKET_NAME")
+    if not bucket_name or not s3_key:
+        return None
+        
+    s3_client = get_s3_client()
+    try:
+        response = s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': bucket_name, 'Key': s3_key},
+            ExpiresIn=expiration
+        )
+        return response
+    except Exception as e:
+        print(f"Error generating presigned URL: {e}")
+        return None
