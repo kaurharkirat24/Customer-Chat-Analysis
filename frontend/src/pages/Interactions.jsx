@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, MessageSquare } from 'lucide-react';
+import { Search, Filter, MessageSquare, Paperclip } from 'lucide-react';
 
-const API = 'http://localhost:8000';
+const API = '/api';
 
 const Interactions = () => {
   const navigate = useNavigate();
@@ -11,6 +11,7 @@ const Interactions = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [priorityFilter, setPriorityFilter] = useState('');
   const [timeframe, setTimeframe] = useState('all');
+  const [viewTab, setViewTab] = useState('inbox');
 
   useEffect(() => {
     const params = new URLSearchParams();
@@ -38,12 +39,41 @@ const Interactions = () => {
     return 'var(--text-muted)';
   };
 
+  const filteredInteractions = interactions.filter(item => {
+    if (viewTab === 'spam') return item.is_spam === true;
+    return item.is_spam !== true;
+  });
+
   return (
     <div style={{ padding: '32px' }}>
       {/* Header */}
       <div style={{ marginBottom: '32px' }}>
         <h1 style={{ fontSize: '28px', fontWeight: '700', color: 'var(--text-main)' }}>Interactions</h1>
         <p style={{ color: 'var(--text-muted)', marginTop: '4px' }}>Browse, search, and filter all customer interactions.</p>
+      </div>
+
+      {/* Tabs */}
+      <div style={{ display: 'flex', gap: '24px', marginBottom: '24px', borderBottom: '1px solid var(--border)' }}>
+        <button 
+          onClick={() => setViewTab('inbox')}
+          style={{ 
+            background: 'none', border: 'none', padding: '0 0 12px 0', fontSize: '15px', fontWeight: '500', cursor: 'pointer',
+            color: viewTab === 'inbox' ? 'var(--primary)' : 'var(--text-muted)',
+            borderBottom: viewTab === 'inbox' ? '2px solid var(--primary)' : '2px solid transparent'
+          }}
+        >
+          Inbox
+        </button>
+        <button 
+          onClick={() => setViewTab('spam')}
+          style={{ 
+            background: 'none', border: 'none', padding: '0 0 12px 0', fontSize: '15px', fontWeight: '500', cursor: 'pointer',
+            color: viewTab === 'spam' ? 'var(--danger)' : 'var(--text-muted)',
+            borderBottom: viewTab === 'spam' ? '2px solid var(--danger)' : '2px solid transparent'
+          }}
+        >
+          Spam
+        </button>
       </div>
 
       {/* Search + Filters */}
@@ -86,7 +116,7 @@ const Interactions = () => {
 
       {/* Count */}
       <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '16px' }}>
-        Showing {interactions.length} interaction{interactions.length !== 1 ? 's' : ''}
+        Showing {filteredInteractions.length} interaction{filteredInteractions.length !== 1 ? 's' : ''}
       </p>
 
       {/* Table */}
@@ -103,7 +133,7 @@ const Interactions = () => {
             </tr>
           </thead>
           <tbody>
-            {interactions.map(item => (
+            {filteredInteractions.map(item => (
               <tr
                 key={item.id}
                 className="table-row"
@@ -118,7 +148,14 @@ const Interactions = () => {
                   <div style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{item.user}</div>
                 </td>
                 <td style={{ padding: '16px', color: 'var(--text-muted)', fontSize: '13px', maxWidth: '320px' }}>
-                  {item.message_preview || '-'}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', gap: '6px' }}>
+                    {item.has_attachments && (
+                      <div title={`Attachments: ${item.attachment_names?.join(', ') || 'files'}`} style={{ marginTop: '2px', color: 'var(--primary)' }}>
+                        <Paperclip size={14} />
+                      </div>
+                    )}
+                    <span>{item.message_preview || '-'}</span>
+                  </div>
                 </td>
                 <td style={{ padding: '16px' }}>
                   <span className="pill" style={{ background: '#F1F5F9', color: 'var(--primary)', border: '1px solid #E2E8F0' }}>
@@ -135,7 +172,7 @@ const Interactions = () => {
                 </td>
               </tr>
             ))}
-            {interactions.length === 0 && (
+            {filteredInteractions.length === 0 && (
               <tr>
                 <td colSpan={6} style={{ padding: '48px', textAlign: 'center', color: 'var(--text-muted)' }}>
                   <MessageSquare size={32} style={{ marginBottom: '12px', opacity: 0.4 }} />

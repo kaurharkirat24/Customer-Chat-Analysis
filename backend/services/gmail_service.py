@@ -99,6 +99,17 @@ def fetch_unread_emails():
                 except Exception as e:
                     print(f"Attachment {att['filename']} failed to upload: {e}")
 
+            # Mark as read (remove UNREAD label)
+            service.users().messages().modify(
+                userId='me', id=msg['id'],
+                body={'removeLabelIds': ['UNREAD']}
+            ).execute()
+            
+            # Prevent infinite loops: ignore emails sent by our own system account
+            if "hkcodes04@gmail.com" in sender.lower():
+                print(f"Skipping email from ourselves to prevent loop: {subject}")
+                continue
+
             parsed_emails.append({
                 "id": msg['id'],
                 "sender": sender,
@@ -107,19 +118,13 @@ def fetch_unread_emails():
                 "attachments": processed_attachments
             })
             
-            # Mark as read (remove UNREAD label)
-            service.users().messages().modify(
-                userId='me', id=msg['id'],
-                body={'removeLabelIds': ['UNREAD']}
-            ).execute()
-            
         return parsed_emails
     except HttpError as error:
         print(f"An error occurred fetching emails: {error}")
         return []
 
-def send_email(to_address: str, subject: str, content: str):
-    """Sends an email using the Gmail API."""
+def send_email(to_address: str, subject: str, content: str, attachments: list = None):
+    """Sends an email using the Gmail API, optionally with attachments (list of file paths)."""
     service = get_gmail_service()
     try:
         message = EmailMessage()
@@ -127,6 +132,20 @@ def send_email(to_address: str, subject: str, content: str):
         message['To'] = to_address
         message['From'] = 'me'  # Gmail API automatically uses the authenticated user's address
         message['Subject'] = subject
+
+        if attachments:
+            import mimetypes
+            for attachment_path in attachments:
+                if os.path.exists(attachment_path):
+                    mime_type, _ = mimetypes.guess_type(attachment_path)
+                    mime_type = mime_type or 'application/octet-stream'
+                    maintype, subtype = mime_type.split('/', 1)
+                    
+                    with open(attachment_path, 'rb') as fp:
+                        file_data = fp.read()
+                        
+                    filename = os.path.basename(attachment_path)
+                    message.add_attachment(file_data, maintype=maintype, subtype=subtype, filename=filename)
 
         encoded_message = base64.urlsafe_b64encode(message.as_bytes()).decode()
         create_message = {'raw': encoded_message}

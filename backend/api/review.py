@@ -66,6 +66,15 @@ def get_review_detail(interaction_id: int, db: Session = Depends(get_db)):
         .all()
     )
 
+    from models.attachment import Attachment
+    from services.security_service import generate_presigned_url
+    
+    attachments = (
+        db.query(Attachment)
+        .filter(Attachment.interaction_id == interaction.id)
+        .all()
+    )
+
     return {
         "id": interaction.id,
         "customer": {
@@ -81,6 +90,7 @@ def get_review_detail(interaction_id: int, db: Session = Depends(get_db)):
         "confidence": interaction.confidence_score,
         "priority": interaction.priority,
         "feature_tag": interaction.feature_tag,
+        "is_spam": interaction.is_spam,
         "status": interaction.status,
         "resolved_by": interaction.resolved_by,
         "resolution_note": interaction.resolution_note,
@@ -95,6 +105,16 @@ def get_review_detail(interaction_id: int, db: Session = Depends(get_db)):
             }
             for log in logs
         ],
+        "attachments": [
+            {
+                "id": att.id,
+                "filename": att.filename,
+                "file_type": att.file_type,
+                "size": att.size,
+                "s3_url": generate_presigned_url(att.s3_key) if hasattr(att, 's3_key') and att.s3_key else att.s3_url
+            }
+            for att in attachments
+        ]
     }
 
 

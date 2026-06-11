@@ -20,10 +20,10 @@ from api.ingestion import router as ingestion_router
 from api.review import router as review_router
 from api.customers import router as customers_router
 
-app.include_router(auth_router)
-app.include_router(ingestion_router)
-app.include_router(review_router)
-app.include_router(customers_router)
+app.include_router(auth_router, prefix="/api")
+app.include_router(ingestion_router, prefix="/api")
+app.include_router(review_router, prefix="/api")
+app.include_router(customers_router, prefix="/api")
 
 @app.get("/health")
 def health_check():
@@ -97,6 +97,7 @@ def sync_poll_and_process():
                     interaction.confidence_score = final_state.get("confidence_score", 1.0)
                     interaction.priority = final_state.get("priority", "P3")
                     interaction.feature_tag = final_state.get("feature_tag")
+                    interaction.is_spam = final_state.get("is_spam", False)
                     interaction.status = final_state.get("status", "Processed")
                     db.commit()
                     

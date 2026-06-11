@@ -109,11 +109,14 @@ def get_recent_interactions(
             (Interaction.original_message.ilike(f"%{search}%"))
         )
 
+    from models.attachment import Attachment
+    
     interactions = query.order_by(Interaction.id.desc()).limit(100).all()
     results = []
     for it in interactions:
         customer = db.query(Customer).filter(Customer.id == it.customer_id).first()
         log = db.query(ActionLog).filter(ActionLog.interaction_id == it.id).first()
+        atts = db.query(Attachment).filter(Attachment.interaction_id == it.id).all()
         
         # Truncate message for preview
         preview = it.original_message[:120] + "..." if it.original_message and len(it.original_message) > 120 else it.original_message
@@ -129,7 +132,10 @@ def get_recent_interactions(
             "confidence": it.confidence_score or 1.0,
             "status": it.status or "Pending",
             "feature": it.feature_tag,
+            "is_spam": it.is_spam,
             "message_preview": preview,
+            "has_attachments": len(atts) > 0,
+            "attachment_names": [a.filename for a in atts],
             "created_at": it.created_at.isoformat() if it.created_at else None,
         })
     return results
