@@ -4,8 +4,6 @@
 
 Moving beyond standard chatbots, this platform reads incoming customer emails, extracts deep intent and sentiment, securely scans multimodal attachments, and orchestrates specialized AI agents to handle the workload.
 
-![Dashboard Preview](https://via.placeholder.com/1200x600?text=CX+Flow+Command+Center)
-
 ## 🚀 Key Features
 
 *   **Live Email Ingestion (Gmail API):** Background asynchronous task that securely authenticates via OAuth2 and polls live inbox data without blocking the main event loop.
@@ -78,6 +76,3 @@ To allow the backend to poll emails, you must generate a `token.json` file.
 
 ## 🤝 Contributing
 Pull requests are welcome! For major changes, please open an issue first to discuss what you would like to change.
-
-## 📄 License
-[MIT](https://choosealicense.com/licenses/mit/)
